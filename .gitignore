@@ -1,6 +1,7 @@
 .vscode
 
-build
+build/*
+!build/Release
 
 CMakeLists.txt.user
 CMakeCache.txt
