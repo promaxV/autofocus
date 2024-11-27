@@ -4,7 +4,7 @@ import serial.tools.list_ports
 
 print("Platform:", platform.architecture())
 try:
-    autofocus_so = ctypes.CDLL('./build/Release/autofocus.so')
+    autofocus_so = ctypes.CDLL('./libautofocus.so')
 except OSError as e:
     print(f"Error loading SO: {e}")
     exit(1)
