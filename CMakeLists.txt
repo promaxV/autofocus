@@ -35,6 +35,7 @@ if(MSVC)
 elseif(CMAKE_C_COMPILER_ID MATCHES "GNU")
     message("GNU COMPILER BUILD")
 
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
     # Boost
     set(BOOST_ROOT "/usr/include/boost")
     find_package(Boost REQUIRED)
@@ -48,9 +49,9 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "GNU")
     add_executable(autofocus_exe src/autofocus.cpp)
     add_executable(autofocusdlltest src/autofocussotest.cpp)
 
-    target_link_libraries(autofocus ${OpenCV_LIBS} ${Boost_LIBRARIES})
-    target_link_libraries(autofocus_exe ${OpenCV_LIBS} ${Boost_LIBRARIES})
-    target_link_libraries(autofocusdlltest ${OpenCV_LIBS} ${Boost_LIBRARIES})
+    target_link_libraries(autofocus ${OpenCV_LIBS} ${Boost_LIBRARIES} ${CMAKE_DL_LIBS})
+    target_link_libraries(autofocus_exe ${OpenCV_LIBS} ${Boost_LIBRARIES} ${CMAKE_DL_LIBS})
+    target_link_libraries(autofocusdlltest ${OpenCV_LIBS} ${Boost_LIBRARIES} ${CMAKE_DL_LIBS})
 
     set_target_properties(autofocus PROPERTIES OUTPUT_NAME "autofocus")
     set_target_properties(autofocus_exe PROPERTIES OUTPUT_NAME "autofocus_exe")
