@@ -108,7 +108,7 @@ WebCamera::~WebCamera() {
 
 void WebCamera::open() {
     std::cout << "Opening camera with index " << camIndex << std::endl;
-    cap.open(camIndex, cv::CAP_DSHOW);
+    cap.open(camIndex);
     if (!cap.isOpened()) {
         std::cerr << "Error: Could not open camera with index " << camIndex << std::endl;
     } else {
