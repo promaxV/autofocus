@@ -98,7 +98,7 @@ private:
     std::string statusMessage;
     std::vector<cv::Mat> frames;
 
-    const unsigned int TIMEOUT_MS = 10000;
+    const unsigned int TIMEOUT_MS = 20000;
     const unsigned int CAPTURE_THREAD_DELAY_MS = 34; // TODO оптимизировать задержку
 
     unsigned int stepCounter = 0;
