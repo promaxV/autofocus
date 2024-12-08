@@ -108,7 +108,7 @@ WebCamera::~WebCamera() {
 
 void WebCamera::open() {
     std::cout << "Opening camera with index " << camIndex << std::endl;
-    cap.open(camIndex);
+    cap.open(camIndex, cv::CAP_DSHOW);
     if (!cap.isOpened()) {
         std::cerr << "Error: Could not open camera with index " << camIndex << std::endl;
     } else {
@@ -319,6 +319,16 @@ void startAutoFocus(const char* port, int cameraIndex) {
 void testDllExport(const char *someString, int someInt)
 {
     std::cout << "DLL export test: " << someString << " " << someInt << std::endl;
+}
+
+void moveMotorSteps(const char* port, unsigned char motorId, int steps) {
+    MotorControl motor(port);
+    motor.moveSteps(motorId, steps);
+}
+
+void setMotorDefaultValues(const char* port, unsigned char motorId, unsigned int unitSteps, unsigned long minSpeed, unsigned long maxSpeed, unsigned long accel) {
+    MotorControl motor(port);
+    motor.setDefaultValues(motorId, unitSteps, minSpeed, maxSpeed, accel);
 }
 
 int main() {

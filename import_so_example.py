@@ -26,3 +26,19 @@ autofocus_so.startAutoFocus.argtypes = [ctypes.c_char_p, ctypes.c_int]
 autofocus_so.startAutoFocus.restype = ctypes.c_void_p
 
 autofocus_so.startAutoFocus(port.encode('utf-8'), camera_index)
+
+autofocus_so.moveMotorSteps.argtypes = [ctypes.c_char_p, ctypes.c_ubyte, ctypes.c_int]
+autofocus_so.moveMotorToPosition.argtypes = [ctypes.c_char_p, ctypes.c_ubyte, ctypes.c_int]
+autofocus_so.setMotorDefaultValues.argtypes = [ctypes.c_char_p, ctypes.c_ubyte, ctypes.c_uint, ctypes.c_ulong, ctypes.c_ulong, ctypes.c_ulong]
+
+# Пример управления мотором
+port = input("Enter the serial port to use: ").encode('utf-8')
+motor_id = 1
+steps = 1000
+unit_steps = 1
+min_speed = 380000
+max_speed = 1140000
+accel = 10000
+
+autofocus_so.moveMotorSteps(port, motor_id, steps)
+autofocus_so.setMotorDefaultValues(port, motor_id, unit_steps, min_speed, max_speed, accel)

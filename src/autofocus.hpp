@@ -125,3 +125,11 @@ extern "C" {
 extern "C" {
     DLL_EXPORT void testDllExport(const char* someString, int someInt);
 }
+
+extern "C" {
+    DLL_EXPORT void moveMotorSteps(const char* port, unsigned char motorId, int steps);
+}
+
+extern "C" {
+    DLL_EXPORT void setMotorDefaultValues(const char* port, unsigned char motorId, unsigned int unitSteps, unsigned long minSpeed, unsigned long maxSpeed, unsigned long accel);
+}
