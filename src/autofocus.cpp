@@ -181,15 +181,13 @@ void FocusController::captureThread() {
         {
             std::lock_guard<std::mutex> lock(mtx);
             frames.push_back(frame);
-            if (frames.size() > 10) { // Ограничение размера массива
+            if (frames.size() > 10) {                // Ограничение размера массива
                 frames.erase(frames.begin());
             }
         }
 
         cv::imshow("Frame", frame);
         cv::waitKey(30);
-
-        // std::this_thread::sleep_for(std::chrono::milliseconds(CAPTURE_THREAD_DELAY_MS)); // TODO оптимизировать задержку
     }
 
     cv::destroyWindow("Frame");
@@ -306,15 +304,15 @@ void FocusController::run() {
 }
 
 void startAutoFocus(const char* port, int cameraIndex) {
-        // Инициализация компонентов
-        MotorControl motor(port);
-        WebCamera camera(cameraIndex);
-        ImageProcessor imageProcessor;
+    // Инициализация компонентов
+    MotorControl motor(port);
+    WebCamera camera(cameraIndex);
+    ImageProcessor imageProcessor;
 
-        FocusController focusController(motor, camera, imageProcessor);
+    FocusController focusController(motor, camera, imageProcessor);
 
-        focusController.run();
-    }
+    focusController.run();
+}
 
 void testDllExport(const char *someString, int someInt)
 {
