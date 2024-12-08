@@ -3,15 +3,19 @@
 build/*
 !build/Release
 
+docs
+Doxyfile
+
 CMakeLists.txt.user
 CMakeCache.txt
+CMakeUserPresets.json
 CMakeFiles
 CMakeScripts
-Testing
-Makefile
+CTestTestfile.cmake
 cmake_install.cmake
+Makefile
+Testing
 install_manifest.txt
 compile_commands.json
-CTestTestfile.cmake
+
 _deps
-CMakeUserPresets.json
