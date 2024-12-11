@@ -6,6 +6,8 @@ build/*
 docs
 Doxyfile
 
+frames
+
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeUserPresets.json
