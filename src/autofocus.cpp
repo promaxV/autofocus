@@ -109,6 +109,9 @@ WebCamera::~WebCamera() {
 void WebCamera::open() {
     std::cout << "Opening camera with index " << camIndex << std::endl;
     cap.open(camIndex, cv::CAP_DSHOW);
+    cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
+    cap.set(cv::CAP_PROP_FRAME_HEIGHT, 360);
+    cap.set(cv::CAP_PROP_FPS, 30);
     if (!cap.isOpened()) {
         std::cerr << "Error: Could not open camera with index " << camIndex << std::endl;
     } else {
@@ -147,7 +150,7 @@ double ImageProcessor::calculateLaplacianVariance(const cv::Mat& frame) {
     cv::Laplacian(frameGray, laplacian, CV_64F);
     cv::Scalar mean, stddev;
     cv::meanStdDev(laplacian, mean, stddev);
-    return (stddev.val[0] * stddev.val[0])*100000/frameGray.size().area();
+    return (stddev.val[0] * stddev.val[0])*100000/(frameGray.size().area());
 }
 
 
@@ -176,7 +179,7 @@ void FocusController::captureThread() {
 
     cv::namedWindow("Frame");
 
-    while (!stopFlag && !timeoutFlag) {
+    while (!stopFlag && !timeoutFlag && motor.getLastPosition(1) <= 38000) {
         cv::Mat frame = camera.getFrame();
         {
             std::lock_guard<std::mutex> lock(mtx);
@@ -218,8 +221,9 @@ void FocusController::focusAdjustment(const int steps, const unsigned int N, con
         double laplacianVar = imageProcessor.calculateLaplacianVariance(frame);
         std::cout << "Laplacian variance: " << laplacianVar << " at focus position " << motor.getLastPosition(1) << std::endl;
 
-        // std::string filename = "image_" + std::to_string(stepCounter) + ".png";
-        // saveFrame(frame, filename);
+        cv::putText(frame, "Laplacian variance: " + std::to_string(laplacianVar), cv::Point2d(10, 30), cv::FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv::LINE_AA);
+        std::string filename = "image_" + std::to_string(motor.getLastPosition(1)) + ".png";
+        saveFrame(frame, filename);
 
         if (laplacianVar > maxLaplacianValue) {
             maxLaplacianValue = laplacianVar;
@@ -232,7 +236,8 @@ void FocusController::focusAdjustment(const int steps, const unsigned int N, con
         if (stepsSinceMax >= N && maxLaplacianValue > threshold) {
             std::cout << "Optimal focus found at position: " << maxPosition << "\n";
 
-            // std::string bestFilename = "image_best_" + std::to_string(stepCounter) + ".png";
+            // cv::putText(frame, "Laplacian variance: " + std::to_string(laplacianVar), cv::Point2d(10, 30), cv::FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv::LINE_AA);
+            // std::string bestFilename = "image_" + std::to_string(motor.getLastPosition(1)) + "_best.png";
             // saveFrame(frame, bestFilename);
             
             motor.moveSteps(1, -steps*(stepsSinceMax - maxPositionShift));
@@ -240,14 +245,13 @@ void FocusController::focusAdjustment(const int steps, const unsigned int N, con
         }
 
         motor.moveSteps(1, steps);
-        stepCounter+=steps;
     }
 }
 
 void FocusController::motorControlThread() {
     stopFlag = false;
 
-    motor.setDefaultValues(1, 1, 3*360000UL, 3*1140000UL, 3*10000UL); // TODO поиграться со значениями для ускорения
+    motor.setDefaultValues(1, 1, 3*360000UL, 3*1140000UL, 10*10000UL); // TODO поиграться со значениями для ускорения
     motor.initializeMotor(1);
 
     while (!cameraReady) {
