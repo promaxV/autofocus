@@ -146,11 +146,22 @@ double ImageProcessor::calculateLaplacianVariance(const cv::Mat& frame) {
     } else {
         frameGray = frame;
     }
+
+    // Apply Gaussian blur to reduce noise and improve focus measure
+    cv::medianBlur(frameGray, frameGray, 3);
+
     cv::Mat laplacian;
     cv::Laplacian(frameGray, laplacian, CV_64F);
+
     cv::Scalar mean, stddev;
     cv::meanStdDev(laplacian, mean, stddev);
-    return (stddev.val[0] * stddev.val[0])*100000/(frameGray.size().area());
+
+    // Normalize the variance by the image area to make it resolution-independent
+    double variance = stddev.val[0] * stddev.val[0];
+    double normalizedVariance = variance / (frameGray.size().area());
+    const double exposure = 1000000.0;
+
+    return normalizedVariance * exposure;
 }
 
 
@@ -161,13 +172,21 @@ FocusController::FocusController(MotorControl& motor, ICamera& camera, ImageProc
 
 void FocusController::timeoutThread() {
     timeoutFlag = false;
+    auto start = std::chrono::steady_clock::now();
+
     while (!cameraReady) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Ожидание готовности камеры
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(TIMEOUT_MS));
-    if (!stopFlag) {
-        timeoutFlag = true;
-        std::cout << "Timeout reached.\n";
+
+    while (!stopFlag) {
+        auto now = std::chrono::steady_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
+        if (elapsed >= TIMEOUT_MS) {
+            timeoutFlag = true;
+            std::cout << "Timeout reached.\n";
+            break;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 
@@ -216,14 +235,16 @@ void FocusController::focusAdjustment(const int steps, const unsigned int N, con
     unsigned stepsSinceMax = 0;
     maxLaplacianValue = 0.0;
     
-    while (!timeoutFlag) {
+    while (!timeoutFlag  && motor.getLastPosition(1) <= 38000) {
         cv::Mat frame = getLastFrame();
         double laplacianVar = imageProcessor.calculateLaplacianVariance(frame);
         std::cout << "Laplacian variance: " << laplacianVar << " at focus position " << motor.getLastPosition(1) << std::endl;
 
-        cv::putText(frame, "Laplacian variance: " + std::to_string(laplacianVar), cv::Point2d(10, 30), cv::FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv::LINE_AA);
+        cv::Mat frameForSave;
+        frame.copyTo(frameForSave);
+        cv::putText(frameForSave, "Laplacian variance: " + std::to_string(laplacianVar), cv::Point2d(10, 30), cv::FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv::LINE_AA);
         std::string filename = "image_" + std::to_string(motor.getLastPosition(1)) + ".png";
-        saveFrame(frame, filename);
+        saveFrame(frameForSave, filename);
 
         if (laplacianVar > maxLaplacianValue) {
             maxLaplacianValue = laplacianVar;
@@ -258,10 +279,10 @@ void FocusController::motorControlThread() {
         std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Ожидание готовности камеры
     }
 
-    focusAdjustment(500, 15, 10, -1); // Первый проход с большим шагом
+    focusAdjustment(500, 15, 20, -1); // Первый проход с большим шагом
 
     std::cout << "Starting fine-tuning focus...\n";
-    focusAdjustment(50, 30, 10); // Дополнительный проход с меньшим шагом
+    focusAdjustment(50, 30, 30); // Дополнительный проход с меньшим шагом
     stopFlag = true;
 }
 
