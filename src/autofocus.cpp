@@ -127,6 +127,18 @@ cv::Mat WebCamera::getFrame() {
         if (frame.empty()) {
             std::cerr << "Error: Captured frame is empty." << std::endl;
         }
+        else {
+            int width = frame.cols;
+            int height = frame.rows;
+
+            int squareSize = std::min(width, height);
+
+            int x = (width - squareSize) / 2;
+            int y = (height - squareSize) / 2;
+
+            cv::Rect roi(x, y, squareSize, squareSize);
+            frame = frame(roi);
+        }
     } else {
         std::cerr << "Error: Camera is not opened." << std::endl;
     }
