@@ -291,10 +291,10 @@ void FocusController::motorControlThread() {
         std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Ожидание готовности камеры
     }
 
-    focusAdjustment(500, 15, 20, -1); // Первый проход с большим шагом
+    focusAdjustment(500, 25, 30, -1); // Первый проход с большим шагом
 
     std::cout << "Starting fine-tuning focus...\n";
-    focusAdjustment(50, 30, 30); // Дополнительный проход с меньшим шагом
+    focusAdjustment(50, 25, 50); // Дополнительный проход с меньшим шагом
     stopFlag = true;
 }
 
@@ -331,6 +331,7 @@ void FocusController::run() {
         cv::imshow("Frame", frame);
         
         if (key == 27) { // ESC key
+            cv::destroyWindow("Frame");
             break;
         } else if (key == 32 && !autoFocusStarted) { // SPACE key
             cv::destroyWindow("Frame");
@@ -340,20 +341,14 @@ void FocusController::run() {
     }
 }
 
-void startAutoFocus(const char* port, int cameraIndex) {
-    // Инициализация компонентов
-    MotorControl motor(port);
-    WebCamera camera(cameraIndex);
-    ImageProcessor imageProcessor;
-
-    FocusController focusController(motor, camera, imageProcessor);
-
-    focusController.run();
-}
-
 void testDllExport(const char *someString, int someInt)
 {
     std::cout << "DLL export test: " << someString << " " << someInt << std::endl;
+}
+
+void setMotorDefaultValues(const char* port, unsigned char motorId, unsigned int unitSteps, unsigned long minSpeed, unsigned long maxSpeed, unsigned long accel) {
+    MotorControl motor(port);
+    motor.setDefaultValues(motorId, unitSteps, minSpeed, maxSpeed, accel);
 }
 
 void moveMotorSteps(const char* port, unsigned char motorId, int steps) {
@@ -361,9 +356,24 @@ void moveMotorSteps(const char* port, unsigned char motorId, int steps) {
     motor.moveSteps(motorId, steps);
 }
 
-void setMotorDefaultValues(const char* port, unsigned char motorId, unsigned int unitSteps, unsigned long minSpeed, unsigned long maxSpeed, unsigned long accel) {
+void startAutoFocus(const char* port, int cameraIndex) {
     MotorControl motor(port);
-    motor.setDefaultValues(motorId, unitSteps, minSpeed, maxSpeed, accel);
+    WebCamera camera(cameraIndex);
+    ImageProcessor imageProcessor;
+
+    FocusController focusController(motor, camera, imageProcessor);
+
+    focusController.startFocusing();
+}
+
+void autoFocusWindow(const char* port, int cameraIndex) {
+    MotorControl motor(port);
+    WebCamera camera(cameraIndex);
+    ImageProcessor imageProcessor;
+
+    FocusController focusController(motor, camera, imageProcessor);
+
+    focusController.run();
 }
 
 int main() {
@@ -376,7 +386,7 @@ int main() {
     std::cin >> camIndex;
 
     testDllExport(port.c_str(), camIndex);
-    startAutoFocus(port.c_str(), camIndex);
+    autoFocusWindow(port.c_str(), camIndex);
 
     return 0;
 }

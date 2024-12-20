@@ -118,41 +118,22 @@ public:
     void run();
 };
 
-/**
- * @brief Запускает автофокусировку.
- * 
- * @param portName Имя порта для подключения.
- * @param cameraIndex Индекс камеры.
- */
 extern "C" {
-    DLL_EXPORT void startAutoFocus(const char* portName, int cameraIndex);
+    DLL_EXPORT void testDllExport(const char* someString, int someInt);
 }
 
-/**
- * @brief Перемещает мотор на заданное количество шагов.
- * 
- * @param portName Имя порта для подключения.
- * @param motorId Идентификатор мотора.
- * @param steps Количество шагов.
- */
-extern "C" {
-    DLL_EXPORT void moveMotorSteps(const char* portName, unsigned char motorId, int steps);
-}
-
-/**
- * @brief Устанавливает стандартные значения параметров для мотора.
- * 
- * @param portName Имя порта для подключения.
- * @param motorId Идентификатор мотора.
- * @param unitSteps Количество шагов за единицу хода.
- * @param minSpeed Минимальная скорость.
- * @param maxSpeed Максимальная скорость.
- * @param accel Ускорение.
- */
 extern "C" {
     DLL_EXPORT void setMotorDefaultValues(const char* port, unsigned char motorId, unsigned int unitSteps, unsigned long minSpeed, unsigned long maxSpeed, unsigned long accel);
 }
 
 extern "C" {
-    DLL_EXPORT void testDllExport(const char* someString, int someInt);
+    DLL_EXPORT void moveMotorSteps(const char* portName, unsigned char motorId, int steps);
+}
+
+extern "C" {
+    DLL_EXPORT void startAutoFocus(const char* portName, int cameraIndex);
+}
+
+extern "C" {
+    DLL_EXPORT void autoFocusWindow(const char* portName, int cameraIndex);
 }
